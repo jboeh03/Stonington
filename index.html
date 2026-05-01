@@ -252,6 +252,29 @@ select option{background:#1a1a1a}
 /* ── ACTIONS ROW ── */
 .actions-row{display:flex;justify-content:space-between;align-items:center;margin-top:1.25rem;padding-top:1rem;border-top:1px solid var(--border)}
 
+
+/* ── EDIT MODAL ── */
+.edit-modal{background:var(--s1);border:1px solid var(--border);border-radius:18px 18px 0 0;width:100%;max-width:560px;padding:1.5rem;max-height:92vh;overflow-y:auto}
+
+/* ── SOLD MODAL ── */
+.sold-modal-overlay{position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.85);display:flex;align-items:flex-end;justify-content:center;padding:1rem;backdrop-filter:blur(4px)}
+
+/* ── PRICE DROP ── */
+.price-drop-banner{background:var(--reddim);border:1px solid rgba(224,96,96,.25);border-radius:10px;padding:.75rem 1rem;margin-bottom:.65rem;display:flex;align-items:center;justify-content:space-between;gap:.75rem}
+.price-drop-text{font-size:.8rem;color:var(--red);line-height:1.45;flex:1}
+.price-drop-days{font-family:'Syne',sans-serif;font-weight:700;font-size:.75rem;color:var(--red);white-space:nowrap}
+
+/* ── BULK ── */
+.bulk-bar{position:fixed;bottom:4.5rem;left:50%;transform:translateX(-50%);z-index:150;background:var(--s4);border:1px solid var(--border2);border-radius:12px;padding:.65rem 1rem;display:flex;align-items:center;gap:.75rem;box-shadow:0 4px 24px rgba(0,0,0,.5);white-space:nowrap}
+.bulk-count{font-family:'Syne',sans-serif;font-weight:700;font-size:.875rem}
+.item-card.selecting{cursor:default}
+.item-card .select-check{display:none;width:20px;height:20px;border-radius:50%;border:2px solid var(--border2);background:var(--s3);flex-shrink:0;align-items:center;justify-content:center;font-size:.7rem;margin:auto 0}
+.selecting-mode .item-card .select-check{display:flex}
+.item-card.checked .select-check{background:var(--accent);border-color:var(--accent);color:#0e0e0e}
+
+/* ── EXPORT ── */
+.export-btn{display:inline-flex;align-items:center;gap:.4rem;font-size:.775rem}
+
 /* ── TOAST ── */
 .toast{position:fixed;bottom:5.5rem;left:50%;transform:translateX(-50%) translateY(8px);background:var(--s4);border:1px solid var(--border2);border-radius:10px;padding:.6rem 1.1rem;font-size:.825rem;white-space:nowrap;opacity:0;transition:all .25s;z-index:300;pointer-events:none}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
@@ -301,8 +324,13 @@ select option{background:#1a1a1a}
     <div style="padding:1.25rem">
       <div class="section-head" style="margin-bottom:1rem">
         <div style="font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:700">All Items</div>
-        <button class="btn btn-sm btn-accent" onclick="navTo('add')">+ Add Item</button>
+        <div style="display:flex;gap:.4rem">
+          <button class="btn btn-sm btn-ghost export-btn" onclick="exportCSV()">⬇ CSV</button>
+          <button class="btn btn-sm btn-ghost" onclick="toggleBulkMode()" id="bulkToggleBtn">Select</button>
+          <button class="btn btn-sm btn-accent" onclick="navTo('add')">+ Add</button>
+        </div>
       </div>
+      <div id="priceDropAlerts"></div>
       <div class="search-wrap">
         <span class="search-icon">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
@@ -507,6 +535,122 @@ select option{background:#1a1a1a}
       <span>Groups</span>
     </button>
   </div>
+</div>
+
+
+<!-- EDIT ITEM MODAL -->
+<div class="modal-overlay hidden" id="editModal" onclick="closeEditModal(event)">
+  <div class="edit-modal" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+      <div class="modal-title" style="margin-bottom:0">Edit Item</div>
+      <button class="btn btn-danger btn-sm" onclick="deleteCurrentItem()">Delete</button>
+    </div>
+    <div class="form-card">
+      <div class="field">
+        <label class="field-label">Title</label>
+        <input type="text" id="editTitle">
+      </div>
+      <div class="field">
+        <label class="field-label">Group / Room</label>
+        <select id="editGroup"></select>
+      </div>
+      <div class="field">
+        <label class="field-label">Condition</label>
+        <div class="cond-row" id="editCondRow">
+          <button class="cond-btn" onclick="setEditCond(this,'New')">New</button>
+          <button class="cond-btn" onclick="setEditCond(this,'Like New')">Like New</button>
+          <button class="cond-btn" onclick="setEditCond(this,'Good')">Good</button>
+          <button class="cond-btn" onclick="setEditCond(this,'Fair')">Fair</button>
+          <button class="cond-btn" onclick="setEditCond(this,'For Parts')">For Parts</button>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label">Description</label>
+        <textarea id="editDesc"></textarea>
+      </div>
+      <div class="field">
+        <label class="field-label">Asking price</label>
+        <div class="price-wrap">
+          <span class="price-sym">$</span>
+          <input type="number" id="editPrice" min="0" step="0.01">
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label">Status</label>
+        <div class="status-row" id="editStatusRow">
+          <button class="status-btn" onclick="setEditStatus(this,'Draft')">Draft</button>
+          <button class="status-btn" onclick="setEditStatus(this,'Listed')">Listed</button>
+          <button class="status-btn" onclick="setEditStatus(this,'Pending')">Pending</button>
+          <button class="status-btn" onclick="setEditStatus(this,'Sold')">Sold</button>
+        </div>
+      </div>
+      <div class="field" id="editSoldFields" style="display:none">
+        <label class="field-label">Final sale price</label>
+        <div class="price-wrap" style="margin-bottom:.65rem">
+          <span class="price-sym">$</span>
+          <input type="number" id="editFinalPrice" min="0" step="0.01">
+        </div>
+        <label class="field-label">Payment method</label>
+        <select id="editPayment">
+          <option>Cash</option><option>Venmo</option><option>Zelle</option>
+          <option>PayPal</option><option>OfferUp Pay</option>
+          <option>Facebook Pay</option><option>eBay Managed Payments</option>
+          <option>Check</option><option>Other</option>
+        </select>
+      </div>
+      <div class="field">
+        <label class="field-label">Marketplace</label>
+        <input type="text" id="editMarketplace" placeholder="e.g. Facebook Marketplace">
+      </div>
+      <div class="field" style="margin-bottom:0">
+        <label class="field-label">Tags</label>
+        <input type="text" id="editTags">
+      </div>
+    </div>
+    <div style="display:flex;gap:.6rem;margin-top:.5rem">
+      <button class="btn btn-ghost" style="flex:1" onclick="closeEditModal()">Cancel</button>
+      <button class="btn btn-accent" style="flex:1" onclick="saveEdit()">Save changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- MARK SOLD MODAL -->
+<div class="modal-overlay hidden" id="soldModal">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Mark as Sold 🎉</div>
+    <div class="form-card">
+      <div class="field">
+        <label class="field-label">Final sale price</label>
+        <div class="price-wrap">
+          <span class="price-sym">$</span>
+          <input type="number" id="soldFinalPrice" min="0" step="0.01">
+        </div>
+      </div>
+      <div class="field" style="margin-bottom:0">
+        <label class="field-label">Payment method</label>
+        <select id="soldPayment">
+          <option>Cash</option><option>Venmo</option><option>Zelle</option>
+          <option>PayPal</option><option>OfferUp Pay</option>
+          <option>Facebook Pay</option><option>eBay Managed Payments</option>
+          <option>Check</option><option>Other</option>
+        </select>
+      </div>
+    </div>
+    <div style="display:flex;gap:.6rem">
+      <button class="btn btn-ghost" style="flex:1" onclick="closeSoldModal()">Cancel</button>
+      <button class="btn btn-accent" style="flex:1" onclick="confirmSold()">Confirm sold</button>
+    </div>
+  </div>
+</div>
+
+<!-- BULK ACTION BAR -->
+<div class="bulk-bar hidden" id="bulkBar">
+  <span class="bulk-count" id="bulkCount">0 selected</span>
+  <button class="btn btn-sm btn-accent" onclick="bulkMarkSold()">Mark Sold</button>
+  <button class="btn btn-sm btn-ghost" onclick="bulkDelete()">Delete</button>
+  <button class="btn btn-sm btn-ghost" onclick="cancelBulk()">✕ Cancel</button>
 </div>
 
 <!-- SHARE OVERLAY -->
@@ -714,8 +858,21 @@ function renderDash() {
   `;
   const recent = [...items].sort((a,b)=>b.createdAt-a.createdAt).slice(0,4);
   const el = document.getElementById('recentItems');
-  if(!recent.length) { el.innerHTML = `<div class="empty"><div class="empty-icon">🏷️</div><div class="empty-title">No items yet</div><div class="empty-sub">Tap + Add to photograph and list your first item</div></div>`; return; }
-  el.innerHTML = `<div class="items-list">${recent.map(itemCard).join('')}</div>`;
+  // Price drop alerts on dash
+  const stale = getPriceDropItems(7);
+  let alertHtml = '';
+  if(stale.length) {
+    alertHtml = `<div style="margin-bottom:.85rem">
+      <div class="section-title" style="margin-bottom:.5rem;color:var(--red)">⚠️ Price drop suggestions</div>
+      ${stale.slice(0,3).map(item=>`
+        <div class="price-drop-banner">
+          <div class="price-drop-text"><strong>${item.title}</strong> — $${item.price} · ${Math.floor((Date.now()-item.createdAt)/86400000)} days listed</div>
+          <button class="btn btn-sm btn-ghost" onclick="openDetail('${item.id}')">Review</button>
+        </div>`).join('')}
+    </div>`;
+  }
+  if(!recent.length) { el.innerHTML = alertHtml + `<div class="empty"><div class="empty-icon">🏷️</div><div class="empty-title">No items yet</div><div class="empty-sub">Tap + Add to photograph and list your first item</div></div>`; return; }
+  el.innerHTML = alertHtml + `<div class="items-list">${recent.map(itemCard).join('')}</div>`;
 }
 
 // ── ITEMS LIST ─────────────────────────────────
@@ -737,8 +894,13 @@ function renderItems() {
   if(q) filtered = filtered.filter(i=>(i.title+i.description+i.tags).toLowerCase().includes(q));
   filtered.sort((a,b)=>b.createdAt-a.createdAt);
   const el = document.getElementById('itemsList');
+  const alertEl = document.getElementById('priceDropAlerts');
+  if(alertEl) renderPriceDropAlerts(alertEl);
   if(!filtered.length) { el.innerHTML = `<div class="empty"><div class="empty-icon">🔍</div><div class="empty-title">No items found</div><div class="empty-sub">Try a different filter or add a new item</div></div>`; return; }
   el.innerHTML = `<div class="items-list">${filtered.map(itemCard).join('')}</div>`;
+  // Bulk toggle btn text
+  const btn = document.getElementById('bulkToggleBtn');
+  if(btn) btn.textContent = bulkMode ? '✕ Cancel' : 'Select';
 }
 function setFilter(type, val) {
   if(type==='status') ST.filterStatus=val;
@@ -748,7 +910,10 @@ function setFilter(type, val) {
 function itemCard(item) {
   const group = ST.groups.find(g=>g.id===item.group);
   const user = ST.users.find(u=>u.id===item.loggedBy);
-  return `<div class="item-card" onclick="openDetail('${item.id}')">
+  const checked = bulkSelected.has(item.id);
+  const clickAction = bulkMode ? `toggleBulkSelect('${item.id}')` : `openDetail('${item.id}')`;
+  return `<div class="item-card ${bulkMode?'selecting':''} ${checked?'checked':''}" onclick="${clickAction}">
+    <div class="select-check">${checked?'✓':''}</div>
     ${item.imageDataUrl ? `<img class="item-card-img" src="${item.imageDataUrl}" alt="">` : `<div class="item-card-img-placeholder">${group?.icon||'📦'}</div>`}
     <div class="item-card-body">
       <div class="item-card-top">
@@ -895,13 +1060,10 @@ async function startAnalysis() {
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
-        model:'claude-sonnet-4-20250514', max_tokens:1500,
+        model:'claude-sonnet-4-20250514', max_tokens:2048,
         messages:[{role:'user',content:[
           ...imageContent,
-          {type:'text',text:`You are a resale pricing expert. Analyze ${ST.flow.images.length > 1 ? 'these ' + ST.flow.images.length + ' photos' : 'this photo'} of an item to sell. Photos may include the item, tags, labels, or model numbers — use everything visible to be as specific as possible. Return ONLY a valid JSON object with no markdown, no explanation, just the raw JSON:
-{"itemName":"specific name with brand and model if visible","category":"Electronics|Clothing|Furniture|Collectibles|Sports|Books|Toys|Tools|Other","confidence":"High|Medium|Low","estimatedCondition":"New|Like New|Good|Fair|For Parts","description":"3-4 sentence compelling listing description — mention brand, model, key features, what makes it worth buying. Do NOT just describe the condition generically.","keywords":"5 relevant search tags","marketplaces":[{"name":"eBay","low":0,"high":0,"recommended":false,"reason":"one sentence why","fees":"~12.5%"},{"name":"Facebook Marketplace","low":0,"high":0,"recommended":false,"reason":"one sentence why","fees":"Free local"},{"name":"OfferUp","low":0,"high":0,"recommended":false,"reason":"one sentence why","fees":"~12.9% shipped"},{"name":"Craigslist","low":0,"high":0,"recommended":false,"reason":"one sentence why","fees":"Free"}],"suggestedPrice":0,"priceRangeLow":0,"priceRangeHigh":0}
-
-Set exactly one marketplace recommended:true — the best one for this item.`}
+          {type:'text',text:`Resale expert. Return ONLY raw JSON, zero prose or markdown. Use all photos including tags/labels/model numbers. Keep description under 50 words. Schema: {"itemName":"brand+model if visible","category":"Electronics|Clothing|Furniture|Collectibles|Sports|Books|Toys|Tools|Other","confidence":"High|Medium|Low","estimatedCondition":"New|Like New|Good|Fair|For Parts","description":"1-2 sentences: what it is and key selling point","keywords":"tag1,tag2,tag3,tag4,tag5","marketplaces":[{"name":"eBay","low":0,"high":0,"recommended":false,"reason":"why","fees":"~12.5%"},{"name":"Facebook Marketplace","low":0,"high":0,"recommended":false,"reason":"why","fees":"Free local"},{"name":"OfferUp","low":0,"high":0,"recommended":false,"reason":"why","fees":"~12.9%"},{"name":"Craigslist","low":0,"high":0,"recommended":false,"reason":"why","fees":"Free"}],"suggestedPrice":0,"priceRangeLow":0,"priceRangeHigh":0} Mark exactly one recommended:true.\`}
         ]}]
       })
     });
@@ -1130,9 +1292,21 @@ function removeOffer(id, idx) {
   item.offers.splice(idx,1); save(); openDetail(id);
 }
 function markSold(id) {
+  ST._soldTargetId = id;
   const item = ST.items.find(i=>i.id===id);
-  item.status='Sold'; item.finalPrice=item.price;
-  save(); syncToSheet(item); openDetail(id); toast('Marked as sold');
+  document.getElementById('soldFinalPrice').value = item.price||'';
+  document.getElementById('soldModal').classList.remove('hidden');
+}
+function closeSoldModal(){ document.getElementById('soldModal').classList.add('hidden'); }
+function confirmSold(){
+  const item = ST.items.find(i=>i.id===ST._soldTargetId);
+  if(!item) return;
+  item.status='Sold';
+  item.finalPrice = document.getElementById('soldFinalPrice').value||item.price;
+  item.paymentMethod = document.getElementById('soldPayment').value;
+  save(); syncToSheet(item);
+  closeSoldModal(); toast('🎉 Sold! Great flip.');
+  openDetail(item.id);
 }
 function deleteItem(id) {
   if(!confirm('Delete this item?')) return;
@@ -1140,7 +1314,140 @@ function deleteItem(id) {
   save(); navTo('items'); toast('Item deleted');
 }
 function editItem() {
-  toast('Edit coming soon — delete and re-add for now');
+  const item = ST.items.find(i=>i.id===ST.currentDetailId);
+  if(!item) return;
+  // Populate group select
+  const gsel = document.getElementById('editGroup');
+  gsel.innerHTML = '<option value="">— No group —</option>' + ST.groups.map(g=>`<option value="${g.id}">${g.icon} ${g.name}</option>`).join('');
+  gsel.value = item.group||'';
+  document.getElementById('editTitle').value = item.title||'';
+  document.getElementById('editDesc').value = item.description||'';
+  document.getElementById('editPrice').value = item.price||'';
+  document.getElementById('editTags').value = item.tags||'';
+  document.getElementById('editMarketplace').value = item.marketplace||'';
+  document.getElementById('editFinalPrice').value = item.finalPrice||'';
+  document.getElementById('editPayment').value = item.paymentMethod||'Cash';
+  document.getElementById('editSoldFields').style.display = item.status==='Sold'?'block':'none';
+  // Set condition buttons
+  document.querySelectorAll('#editCondRow .cond-btn').forEach(b=>b.classList.toggle('sel',b.textContent===item.condition));
+  ST._editCondition = item.condition||'Good';
+  // Set status buttons
+  document.querySelectorAll('#editStatusRow .status-btn').forEach(b=>{
+    b.className='status-btn';
+    if(b.textContent===item.status) b.className='status-btn sel-'+item.status.toLowerCase();
+  });
+  ST._editStatus = item.status||'Draft';
+  document.getElementById('editModal').classList.remove('hidden');
+}
+function setEditCond(btn,val){ document.querySelectorAll('#editCondRow .cond-btn').forEach(b=>b.classList.remove('sel')); btn.classList.add('sel'); ST._editCondition=val; }
+function setEditStatus(btn,val){
+  document.querySelectorAll('#editStatusRow .status-btn').forEach(b=>b.className='status-btn');
+  btn.className='status-btn sel-'+val.toLowerCase();
+  ST._editStatus=val;
+  document.getElementById('editSoldFields').style.display=val==='Sold'?'block':'none';
+}
+function closeEditModal(e){ if(!e||e.target===document.getElementById('editModal')) document.getElementById('editModal').classList.add('hidden'); }
+function saveEdit(){
+  const item = ST.items.find(i=>i.id===ST.currentDetailId);
+  if(!item) return;
+  item.title = document.getElementById('editTitle').value||item.title;
+  item.group = document.getElementById('editGroup').value;
+  item.condition = ST._editCondition;
+  item.description = document.getElementById('editDesc').value;
+  item.price = document.getElementById('editPrice').value;
+  item.tags = document.getElementById('editTags').value;
+  item.marketplace = document.getElementById('editMarketplace').value;
+  item.status = ST._editStatus;
+  if(ST._editStatus==='Sold'){
+    item.finalPrice = document.getElementById('editFinalPrice').value;
+    item.paymentMethod = document.getElementById('editPayment').value;
+  }
+  save();
+  syncToSheet(item);
+  document.getElementById('editModal').classList.add('hidden');
+  toast('✓ Item updated');
+  openDetail(item.id);
+}
+function deleteCurrentItem(){ deleteItem(ST.currentDetailId); document.getElementById('editModal').classList.add('hidden'); }
+
+
+// ── PRICE DROP ALERTS ──────────────────────────
+function getPriceDropItems(days=7) {
+  const cutoff = Date.now() - (days * 24 * 60 * 60 * 1000);
+  return ST.items.filter(i => (i.status==='Listed'||i.status==='Draft') && i.createdAt < cutoff);
+}
+function renderPriceDropAlerts(containerEl) {
+  const stale = getPriceDropItems(7);
+  if(!stale.length) { containerEl.innerHTML=''; return; }
+  containerEl.innerHTML = stale.map(item => `
+    <div class="price-drop-banner">
+      <div class="price-drop-text">
+        <strong>${item.title}</strong> — listed at $${item.price}, no update in
+      </div>
+      <div>
+        <div class="price-drop-days">${Math.floor((Date.now()-item.createdAt)/(86400000))}d old</div>
+        <button class="btn btn-sm btn-ghost" style="margin-top:.3rem;font-size:.7rem" onclick="openDetail('${item.id}')">Review →</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── BULK ACTIONS ───────────────────────────────
+let bulkMode = false;
+let bulkSelected = new Set();
+function toggleBulkMode() {
+  bulkMode = !bulkMode;
+  bulkSelected.clear();
+  document.getElementById('bulkBar').classList.toggle('hidden', !bulkMode);
+  document.getElementById('itemsList').classList.toggle('selecting-mode', bulkMode);
+  renderItems();
+}
+function cancelBulk() { bulkMode=false; bulkSelected.clear(); document.getElementById('bulkBar').classList.add('hidden'); document.getElementById('itemsList').classList.remove('selecting-mode'); renderItems(); }
+function toggleBulkSelect(id) {
+  if(bulkSelected.has(id)) bulkSelected.delete(id); else bulkSelected.add(id);
+  document.getElementById('bulkCount').textContent = bulkSelected.size + ' selected';
+  renderItems();
+}
+function bulkMarkSold() {
+  if(!bulkSelected.size) return;
+  if(!confirm('Mark ' + bulkSelected.size + ' items as sold?')) return;
+  bulkSelected.forEach(id => {
+    const item = ST.items.find(i=>i.id===id);
+    if(item){ item.status='Sold'; item.finalPrice=item.price; syncToSheet(item); }
+  });
+  save(); cancelBulk(); toast('✓ ' + bulkSelected.size + ' items marked sold'); renderDash();
+}
+function bulkDelete() {
+  if(!bulkSelected.size) return;
+  if(!confirm('Delete ' + bulkSelected.size + ' items? This cannot be undone.')) return;
+  ST.items = ST.items.filter(i=>!bulkSelected.has(i.id));
+  save(); cancelBulk(); toast('Deleted ' + bulkSelected.size + ' items');
+}
+
+// ── CSV EXPORT ─────────────────────────────────
+function exportCSV() {
+  const headers = ['Date','Title','Category','Condition','Group','Marketplace','Asking Price','Status','Final Price','Payment','Description','Tags','Logged By','Notes'];
+  const rows = ST.items.map(item => {
+    const group = ST.groups.find(g=>g.id===item.group);
+    const user = ST.users.find(u=>u.id===item.loggedBy);
+    return [
+      new Date(item.createdAt).toLocaleDateString('en-US'),
+      item.title, item.category, item.condition,
+      group?.name||'', item.marketplace||'',
+      '$'+item.price, item.status,
+      item.finalPrice?'$'+item.finalPrice:'',
+      item.paymentMethod||'',
+      (item.description||'').replace(/,/g,' ').replace(/\n/g,' '),
+      item.tags||'', user?.name||'', item.notes||''
+    ].map(v => '"'+String(v).replace(/"/g,'""')+'"').join(',');
+  });
+  const csv = [headers.join(','), ...rows].join('\n');
+  const blob = new Blob([csv], {type:'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href=url; a.download='stonington-tracker-'+new Date().toISOString().split('T')[0]+'.csv';
+  a.click(); URL.revokeObjectURL(url);
+  toast('CSV exported!');
 }
 
 // ── GROUPS ─────────────────────────────────────
