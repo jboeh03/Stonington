@@ -1052,9 +1052,27 @@ async function startAnalysis() {
   const steps = ['as0','as1','as2','as3'];
   steps.forEach((id,i)=>setTimeout(()=>{ steps.forEach((s,j)=>{ const el=document.getElementById(s); el.className='analyze-step'+(j<i?' done':j===i?' active':''); }); },i*3200));
   try {
-    const imageContent = ST.flow.images.map(img => ({
+    // Compress images before sending to reduce payload and timeout risk
+    const compressImage = (dataUrl) => new Promise(resolve => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const maxDim = 1024;
+        let w = img.width, h = img.height;
+        if(w > maxDim || h > maxDim) {
+          if(w > h) { h = Math.round(h * maxDim/w); w = maxDim; }
+          else { w = Math.round(w * maxDim/h); h = maxDim; }
+        }
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', 0.75).split(',')[1]);
+      };
+      img.src = dataUrl;
+    });
+    const compressedImages = await Promise.all(ST.flow.images.map(i => compressImage(i.dataUrl)));
+    const imageContent = compressedImages.map(b64 => ({
       type:'image',
-      source:{type:'base64', media_type:'image/jpeg', data:img.dataUrl.split(',')[1]}
+      source:{type:'base64', media_type:'image/jpeg', data:b64}
     }));
     const resp = await fetch('/.netlify/functions/analyze',{
       method:'POST',
@@ -1088,8 +1106,9 @@ async function startAnalysis() {
       <div style="padding:2rem;text-align:center">
         <div style="font-size:2rem;margin-bottom:1rem">⚠️</div>
         <div style="font-weight:600;margin-bottom:.5rem;color:var(--red)">Analysis failed</div>
-        <div style="font-size:.8rem;color:var(--text2);background:var(--s3);border-radius:8px;padding:.75rem;margin-bottom:1.25rem;text-align:left;word-break:break-all;line-height:1.6">${errMsg}</div>
-        <button class="btn btn-ghost" onclick="flowGoTo(0)">← Try again</button>
+        <div style="font-size:.8rem;color:var(--text2);background:var(--s3);border-radius:8px;padding:.75rem;margin-bottom:1.25rem;text-align:left;word-break:break-word;line-height:1.6">${errMsg}</div>
+        <div style="font-size:.75rem;color:var(--text3);margin-bottom:1rem">Tip: if timing out, try using fewer photos or a smaller image.</div>
+        <button class="btn btn-accent" onclick="flowGoTo(0)">← Try again</button>
       </div>`;
   }
 }
