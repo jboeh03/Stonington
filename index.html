@@ -1156,7 +1156,7 @@ async function startAnalysis() {
       type:'image',
       source:{type:'base64', media_type:'image/jpeg', data:b64}
     }));
-    const resp = await fetch('/api/analyze',{
+    const resp = await fetch('/.netlify/functions/analyze',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
