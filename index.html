@@ -886,23 +886,14 @@ async function startAnalysis() {
   const tick = setInterval(()=>{ pct=Math.min(pct+1.4,88); fill.style.width=pct+'%'; },200);
   const steps = ['as0','as1','as2','as3'];
   steps.forEach((id,i)=>setTimeout(()=>{ steps.forEach((s,j)=>{ const el=document.getElementById(s); el.className='analyze-step'+(j<i?' done':j===i?' active':''); }); },i*3200));
-  const key = ANTHROPIC_KEY || localStorage.getItem('st_apikey') || '';
-  // Guard: check key is actually set
-  if(!key || key === 'sk-ant-YOUR-KEY-HERE' || !key.startsWith('sk-')) {
-    clearInterval(tick);
-    flowGoTo(0);
-    alert('API key not set or invalid. Please update config.js with your Anthropic key (starts with sk-ant-).');
-    return;
-  }
-
   try {
     const imageContent = ST.flow.images.map(img => ({
       type:'image',
       source:{type:'base64', media_type:'image/jpeg', data:img.dataUrl.split(',')[1]}
     }));
-    const resp = await fetch('https://api.anthropic.com/v1/messages',{
+    const resp = await fetch('/.netlify/functions/analyze',{
       method:'POST',
-      headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
         model:'claude-sonnet-4-20250514', max_tokens:1500,
         messages:[{role:'user',content:[
