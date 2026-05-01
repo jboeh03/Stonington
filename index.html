@@ -1167,13 +1167,12 @@ async function startAnalysis() {
         ]}]
       })
     });
-    if(!resp.ok) {
-      const errText = await resp.text();
-      throw new Error('API error ' + resp.status + ': ' + errText);
-    }
     const data = await resp.json();
     clearInterval(tick); fill.style.width='100%';
-    if(!data.content || !data.content[0]) throw new Error('Empty response from API');
+    // Surface any error from Anthropic or our function
+    if(data.error) throw new Error(data.error);
+    if(!resp.ok) throw new Error('HTTP ' + resp.status);
+    if(!data.content || !data.content[0]) throw new Error('No content in response. Got: ' + JSON.stringify(data).slice(0,200));
     const raw = data.content[0].text.trim();
     // Strip any accidental markdown fences
     const fence = String.fromCharCode(96,96,96); const jsonStr = (()=>{ let s=raw.trim(); if(s.startsWith(fence)) s=s.slice(s.indexOf('\n')+1); if(s.endsWith(fence)) s=s.slice(0,s.lastIndexOf(fence)); return s.trim(); })();
