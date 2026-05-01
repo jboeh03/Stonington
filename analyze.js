@@ -1,4 +1,4 @@
-export default async (request, context) => {
+exports.handler = async (event) => {
   const headers = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'Content-Type',
@@ -6,57 +6,60 @@ export default async (request, context) => {
     'Content-Type': 'application/json'
   };
 
-  if (request.method === 'OPTIONS') {
-    return new Response('', { status: 200, headers });
+  if (event.httpMethod === 'OPTIONS') {
+    return { statusCode: 200, headers, body: '' };
   }
 
-  if (request.method !== 'POST') {
-    return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405, headers });
+  if (event.httpMethod !== 'POST') {
+    return { statusCode: 405, headers, body: JSON.stringify({ error: 'Method not allowed: ' + event.httpMethod }) };
   }
 
-  const key = Netlify.env.get('ANTHROPICKEY');
+  const key = process.env.ANTHROPICKEY;
   if (!key) {
-    return new Response(JSON.stringify({ error: 'ANTHROPICKEY env var not set' }), { status: 500, headers });
+    return { statusCode: 500, headers, body: JSON.stringify({ error: 'ANTHROPICKEY env var not set in Netlify' }) };
   }
 
   let body;
   try {
-    body = await request.json();
-  } catch (e) {
-    return new Response(JSON.stringify({ error: 'Invalid JSON body' }), { status: 400, headers });
+    body = JSON.parse(event.body);
+  } catch(e) {
+    return { statusCode: 400, headers, body: JSON.stringify({ error: 'Invalid JSON: ' + e.message }) };
   }
 
   try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 25000);
+    const https = require('https');
+    const payload = JSON.stringify(body);
 
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      signal: controller.signal,
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': key,
-        'anthropic-version': '2023-06-01'
-      },
-      body: JSON.stringify(body)
+    const data = await new Promise((resolve, reject) => {
+      const options = {
+        hostname: 'api.anthropic.com',
+        path: '/v1/messages',
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Content-Length': Buffer.byteLength(payload),
+          'x-api-key': key,
+          'anthropic-version': '2023-06-01'
+        },
+        timeout: 25000
+      };
+      const req = https.request(options, (res) => {
+        let raw = '';
+        res.on('data', chunk => raw += chunk);
+        res.on('end', () => {
+          try { resolve({ status: res.statusCode, body: JSON.parse(raw) }); }
+          catch(e) { reject(new Error('Bad JSON from Anthropic: ' + raw.slice(0, 100))); }
+        });
+      });
+      req.on('error', reject);
+      req.on('timeout', () => { req.destroy(); reject(new Error('Request timed out')); });
+      req.write(payload);
+      req.end();
     });
 
-    clearTimeout(timeout);
-    const text = await response.text();
+    return { statusCode: data.status, headers, body: JSON.stringify(data.body) };
 
-    let data;
-    try { data = JSON.parse(text); }
-    catch(e) { return new Response(JSON.stringify({ error: 'Bad Anthropic response', raw: text.slice(0,200) }), { status: 502, headers }); }
-
-    return new Response(JSON.stringify(data), { status: response.status, headers });
-
-  } catch (err) {
-    const isTimeout = err.name === 'AbortError';
-    return new Response(
-      JSON.stringify({ error: isTimeout ? 'Timed out — try fewer/smaller photos' : err.message }),
-      { status: isTimeout ? 504 : 500, headers }
-    );
+  } catch(err) {
+    return { statusCode: 500, headers, body: JSON.stringify({ error: err.message }) };
   }
 };
-
-export const config = { path: '/api/analyze' };
