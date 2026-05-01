@@ -887,8 +887,15 @@ async function startAnalysis() {
   const steps = ['as0','as1','as2','as3'];
   steps.forEach((id,i)=>setTimeout(()=>{ steps.forEach((s,j)=>{ const el=document.getElementById(s); el.className='analyze-step'+(j<i?' done':j===i?' active':''); }); },i*3200));
   const key = ANTHROPIC_KEY || localStorage.getItem('st_apikey') || '';
+  // Guard: check key is actually set
+  if(!key || key === 'sk-ant-YOUR-KEY-HERE' || !key.startsWith('sk-')) {
+    clearInterval(tick);
+    flowGoTo(0);
+    alert('API key not set or invalid. Please update config.js with your Anthropic key (starts with sk-ant-).');
+    return;
+  }
+
   try {
-    // Build content array with all images
     const imageContent = ST.flow.images.map(img => ({
       type:'image',
       source:{type:'base64', media_type:'image/jpeg', data:img.dataUrl.split(',')[1]}
@@ -897,22 +904,40 @@ async function startAnalysis() {
       method:'POST',
       headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
       body:JSON.stringify({
-        model:'claude-sonnet-4-20250514', max_tokens:1000,
+        model:'claude-sonnet-4-20250514', max_tokens:1500,
         messages:[{role:'user',content:[
           ...imageContent,
-          {type:'text',text:`You are a resale pricing expert. I am sending you ${ST.flow.images.length} photo(s) of an item I want to sell — they may include the item itself, tags, model numbers, or labels. Use ALL photos to identify the item as accurately as possible. Return ONLY valid JSON, no markdown fences:\n{"itemName":"specific descriptive name including brand/model if visible","category":"Electronics|Clothing|Furniture|Collectibles|Sports|Books|Toys|Tools|Other","confidence":"High|Medium|Low","estimatedCondition":"New|Like New|Good|Fair|For Parts","description":"compelling 3-4 sentence listing description highlighting key features, brand, model, and selling points — NOT just a generic condition statement","keywords":"tag1, tag2, tag3, tag4","marketplaces":[{"name":"eBay","low":0,"high":0,"recommended":false,"reason":"brief reason","fees":"~12.5%"},{"name":"Facebook Marketplace","low":0,"high":0,"recommended":true,"reason":"brief reason","fees":"Free local"},{"name":"OfferUp","low":0,"high":0,"recommended":false,"reason":"brief reason","fees":"~12.9% shipped"},{"name":"Craigslist","low":0,"high":0,"recommended":false,"reason":"brief reason","fees":"Free"}],"suggestedPrice":0,"priceRangeLow":0,"priceRangeHigh":0}`}
+          {type:'text',text:`You are a resale pricing expert. Analyze ${ST.flow.images.length > 1 ? 'these ' + ST.flow.images.length + ' photos' : 'this photo'} of an item to sell. Photos may include the item, tags, labels, or model numbers — use everything visible to be as specific as possible. Return ONLY a valid JSON object with no markdown, no explanation, just the raw JSON:
+{"itemName":"specific name with brand and model if visible","category":"Electronics|Clothing|Furniture|Collectibles|Sports|Books|Toys|Tools|Other","confidence":"High|Medium|Low","estimatedCondition":"New|Like New|Good|Fair|For Parts","description":"3-4 sentence compelling listing description — mention brand, model, key features, what makes it worth buying. Do NOT just describe the condition generically.","keywords":"5 relevant search tags","marketplaces":[{"name":"eBay","low":0,"high":0,"recommended":false,"reason":"one sentence why","fees":"~12.5%"},{"name":"Facebook Marketplace","low":0,"high":0,"recommended":false,"reason":"one sentence why","fees":"Free local"},{"name":"OfferUp","low":0,"high":0,"recommended":false,"reason":"one sentence why","fees":"~12.9% shipped"},{"name":"Craigslist","low":0,"high":0,"recommended":false,"reason":"one sentence why","fees":"Free"}],"suggestedPrice":0,"priceRangeLow":0,"priceRangeHigh":0}
+
+Set exactly one marketplace recommended:true — the best one for this item.`}
         ]}]
       })
     });
+    if(!resp.ok) {
+      const errText = await resp.text();
+      throw new Error('API error ' + resp.status + ': ' + errText);
+    }
     const data = await resp.json();
     clearInterval(tick); fill.style.width='100%';
-    const text = data.content[0].text.replace(/```json|```/g,'').trim();
-    ST.flow.analysis = JSON.parse(text);
+    if(!data.content || !data.content[0]) throw new Error('Empty response from API');
+    const raw = data.content[0].text.trim();
+    // Strip any accidental markdown fences
+    const jsonStr = raw.replace(/^```json\s*/,'').replace(/^```\s*/,'').replace(/\s*```$/,'').trim();
+    ST.flow.analysis = JSON.parse(jsonStr);
     setTimeout(renderMarketplaces, 700);
   } catch(err) {
     clearInterval(tick);
-    ST.flow.analysis = {itemName:'Item',category:'Other',confidence:'Medium',estimatedCondition:'Good',description:'Item in good condition and ready for a new home.',keywords:'home, goods',marketplaces:[{name:'Facebook Marketplace',low:20,high:50,recommended:true,reason:'Best for local, no fees',fees:'Free local'},{name:'OfferUp',low:18,high:45,recommended:false,reason:'Good local reach',fees:'~12.9%'},{name:'eBay',low:25,high:60,recommended:false,reason:'National reach',fees:'~12.5%'},{name:'Craigslist',low:15,high:40,recommended:false,reason:'Hyper-local free',fees:'Free'}],suggestedPrice:30,priceRangeLow:20,priceRangeHigh:50};
-    setTimeout(renderMarketplaces, 700);
+    console.error('Analysis error:', err);
+    // Show the actual error so we can debug
+    const errMsg = err.message || err.toString();
+    document.getElementById('flowStep1').innerHTML = `
+      <div style="padding:2rem;text-align:center">
+        <div style="font-size:2rem;margin-bottom:1rem">⚠️</div>
+        <div style="font-weight:600;margin-bottom:.5rem;color:var(--red)">Analysis failed</div>
+        <div style="font-size:.8rem;color:var(--text2);background:var(--s3);border-radius:8px;padding:.75rem;margin-bottom:1.25rem;text-align:left;word-break:break-all;line-height:1.6">${errMsg}</div>
+        <button class="btn btn-ghost" onclick="flowGoTo(0)">← Try again</button>
+      </div>`;
   }
 }
 
