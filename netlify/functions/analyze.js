@@ -6,30 +6,29 @@ exports.handler = async (event, context) => {
     'Content-Type': 'application/json'
   };
 
-  // Handle preflight
   if (event.httpMethod === 'OPTIONS' || event.httpMethod === 'GET') {
-    return { statusCode: 200, headers, body: JSON.stringify({ ok: true, method: event.httpMethod }) };
-  }
-
-  if (event.httpMethod !== 'POST') {
-    return { statusCode: 200, headers, body: JSON.stringify({ error: 'Expected POST, got: ' + event.httpMethod }) };
+    return { statusCode: 200, headers, body: JSON.stringify({ ok: true }) };
   }
 
   const key = process.env.ANTHROPICKEY;
-  if (!key) {
-    return { statusCode: 200, headers, body: JSON.stringify({ error: 'ANTHROPICKEY not set' }) };
-  }
+  if (!key) return { statusCode: 200, headers, body: JSON.stringify({ error: 'ANTHROPICKEY not set' }) };
 
   let body;
   try {
     body = JSON.parse(event.body);
   } catch(e) {
-    return { statusCode: 200, headers, body: JSON.stringify({ error: 'Bad JSON: ' + e.message }) };
+    return { statusCode: 200, headers, body: JSON.stringify({ error: 'Bad JSON body: ' + e.message }) };
   }
 
   try {
     const https = require('https');
     const payload = JSON.stringify(body);
+    const payloadBytes = Buffer.byteLength(payload);
+
+    // Reject if payload too large (Netlify limit is 6MB)
+    if (payloadBytes > 5 * 1024 * 1024) {
+      return { statusCode: 200, headers, body: JSON.stringify({ error: 'Image too large (' + (payloadBytes/1024/1024).toFixed(1) + 'MB). Please use fewer or smaller photos.' }) };
+    }
 
     const result = await new Promise((resolve, reject) => {
       const options = {
@@ -38,22 +37,30 @@ exports.handler = async (event, context) => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Content-Length': Buffer.byteLength(payload),
+          'Content-Length': payloadBytes,
           'x-api-key': key,
           'anthropic-version': '2023-06-01'
         },
         timeout: 25000
       };
+
       const req = https.request(options, (res) => {
         let raw = '';
         res.on('data', chunk => raw += chunk);
         res.on('end', () => {
-          try { resolve({ status: res.statusCode, body: JSON.parse(raw) }); }
-          catch(e) { reject(new Error('Bad JSON from Anthropic: ' + raw.slice(0,200))); }
+          // Always return the raw response so we can see what went wrong
+          let parsed;
+          try {
+            parsed = JSON.parse(raw);
+          } catch(e) {
+            parsed = { error: 'Anthropic returned non-JSON', raw: raw.slice(0, 500), status: res.statusCode };
+          }
+          resolve({ status: res.statusCode, body: parsed });
         });
       });
-      req.on('error', reject);
-      req.on('timeout', () => { req.destroy(); reject(new Error('Timed out')); });
+
+      req.on('error', (e) => reject(new Error('HTTPS error: ' + e.message)));
+      req.on('timeout', () => { req.destroy(); reject(new Error('Timed out after 25s — try a smaller photo')); });
       req.write(payload);
       req.end();
     });
