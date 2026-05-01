@@ -1045,6 +1045,32 @@ function renderPhotoStep() {
   `;
 }
 
+function showAnalysisError(msg) {
+  const el = document.getElementById('flowStep1');
+  if(!el) return;
+  el.innerHTML = '';
+  const wrap = document.createElement('div');
+  wrap.style.cssText = 'padding:2rem;text-align:center';
+  const icon = document.createElement('div');
+  icon.style.cssText = 'font-size:2rem;margin-bottom:1rem';
+  icon.textContent = '⚠️';
+  const title = document.createElement('div');
+  title.style.cssText = 'font-weight:600;margin-bottom:.5rem;color:var(--red)';
+  title.textContent = 'Analysis failed';
+  const msgEl = document.createElement('div');
+  msgEl.style.cssText = 'font-size:.8rem;color:var(--text2);background:var(--s3);border-radius:8px;padding:.75rem;margin-bottom:1.25rem;text-align:left;word-break:break-word;line-height:1.6';
+  msgEl.textContent = msg;
+  const tip = document.createElement('div');
+  tip.style.cssText = 'font-size:.75rem;color:var(--text3);margin-bottom:1rem';
+  tip.textContent = 'Tip: if timing out, try fewer photos or a smaller image.';
+  const btn = document.createElement('button');
+  btn.className = 'btn btn-accent';
+  btn.textContent = '← Try again';
+  btn.onclick = () => flowGoTo(0);
+  wrap.appendChild(icon); wrap.appendChild(title); wrap.appendChild(msgEl); wrap.appendChild(tip); wrap.appendChild(btn);
+  el.appendChild(wrap);
+}
+
 async function startAnalysis() {
   flowGoTo(1);
   const fill = document.getElementById('loadingFill');
@@ -1082,7 +1108,7 @@ async function startAnalysis() {
         model:'claude-sonnet-4-20250514', max_tokens:2048,
         messages:[{role:'user',content:[
           ...imageContent,
-          {type:'text',text:`Resale expert. Return ONLY raw JSON, zero prose or markdown. Use all photos including tags/labels/model numbers. Keep description under 50 words. Schema: {"itemName":"brand+model if visible","category":"Electronics|Clothing|Furniture|Collectibles|Sports|Books|Toys|Tools|Other","confidence":"High|Medium|Low","estimatedCondition":"New|Like New|Good|Fair|For Parts","description":"1-2 sentences: what it is and key selling point","keywords":"tag1,tag2,tag3,tag4,tag5","marketplaces":[{"name":"eBay","low":0,"high":0,"recommended":false,"reason":"why","fees":"~12.5%"},{"name":"Facebook Marketplace","low":0,"high":0,"recommended":false,"reason":"why","fees":"Free local"},{"name":"OfferUp","low":0,"high":0,"recommended":false,"reason":"why","fees":"~12.9%"},{"name":"Craigslist","low":0,"high":0,"recommended":false,"reason":"why","fees":"Free"}],"suggestedPrice":0,"priceRangeLow":0,"priceRangeHigh":0} Mark exactly one recommended:true.\`}
+          {type:'text',text:'Resale expert. Return ONLY raw JSON, zero prose or markdown. Use all photos including tags/labels/model numbers. Keep description under 50 words. Schema: {"itemName":"brand+model if visible","category":"Electronics|Clothing|Furniture|Collectibles|Sports|Books|Toys|Tools|Other","confidence":"High|Medium|Low","estimatedCondition":"New|Like New|Good|Fair|For Parts","description":"1-2 sentences: what it is and key selling point","keywords":"tag1,tag2,tag3,tag4,tag5","marketplaces":[{"name":"eBay","low":0,"high":0,"recommended":false,"reason":"why","fees":"~12.5%"},{"name":"Facebook Marketplace","low":0,"high":0,"recommended":false,"reason":"why","fees":"Free local"},{"name":"OfferUp","low":0,"high":0,"recommended":false,"reason":"why","fees":"~12.9%"},{"name":"Craigslist","low":0,"high":0,"recommended":false,"reason":"why","fees":"Free"}],"suggestedPrice":0,"priceRangeLow":0,"priceRangeHigh":0} Mark exactly one recommended:true.'}
         ]}]
       })
     });
@@ -1095,7 +1121,7 @@ async function startAnalysis() {
     if(!data.content || !data.content[0]) throw new Error('Empty response from API');
     const raw = data.content[0].text.trim();
     // Strip any accidental markdown fences
-    const jsonStr = raw.replace(/^```json\s*/,'').replace(/^```\s*/,'').replace(/\s*```$/,'').trim();
+    const fence = String.fromCharCode(96,96,96); const jsonStr = (()=>{ let s=raw.trim(); if(s.startsWith(fence)) s=s.slice(s.indexOf('\n')+1); if(s.endsWith(fence)) s=s.slice(0,s.lastIndexOf(fence)); return s.trim(); })();
     ST.flow.analysis = JSON.parse(jsonStr);
     setTimeout(renderMarketplaces, 700);
   } catch(err) {
@@ -1103,14 +1129,7 @@ async function startAnalysis() {
     console.error('Analysis error:', err);
     // Show the actual error so we can debug
     const errMsg = err.message || err.toString();
-    document.getElementById('flowStep1').innerHTML = `
-      <div style="padding:2rem;text-align:center">
-        <div style="font-size:2rem;margin-bottom:1rem">⚠️</div>
-        <div style="font-weight:600;margin-bottom:.5rem;color:var(--red)">Analysis failed</div>
-        <div style="font-size:.8rem;color:var(--text2);background:var(--s3);border-radius:8px;padding:.75rem;margin-bottom:1.25rem;text-align:left;word-break:break-word;line-height:1.6">${errMsg}</div>
-        <div style="font-size:.75rem;color:var(--text3);margin-bottom:1rem">Tip: if timing out, try using fewer photos or a smaller image.</div>
-        <button class="btn btn-accent" onclick="flowGoTo(0)">← Try again</button>
-      </div>`;
+    showAnalysisError(errMsg);
   }
 }
 
