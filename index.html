@@ -297,11 +297,12 @@ select option{background:#1a1a1a}
 <!-- ── MAIN APP ── -->
 <div id="mainApp" class="hidden">
   <div class="topbar">
-    <div class="topbar-logo syne">Stonington<span>.</span></div>
+    <div class="topbar-logo syne">S<span>.</span></div>
     <div class="topbar-right">
-      <div class="user-pill" onclick="logout()" id="userPill">
+      <div class="user-pill" onclick="showUserMenu()" id="userPill">
         <div class="user-avatar" id="pillAvatar"></div>
         <span class="user-pill-name" id="pillName"></span>
+        <span style="font-size:.65rem;color:var(--text3);margin-left:.1rem">▾</span>
       </div>
     </div>
   </div>
@@ -537,6 +538,18 @@ select option{background:#1a1a1a}
   </div>
 </div>
 
+
+
+<!-- USER MENU -->
+<div class="modal-overlay hidden" id="userMenuModal" onclick="closeUserMenu(event)">
+  <div class="modal" onclick="event.stopPropagation()" style="border-radius:14px;max-width:320px;margin:auto">
+    <div class="modal-handle"></div>
+    <div class="modal-title" style="font-size:.95rem;margin-bottom:.75rem">Switch user</div>
+    <div id="userMenuList" style="display:flex;flex-direction:column;gap:.5rem;margin-bottom:1rem"></div>
+    <button class="btn btn-ghost w100" style="margin-bottom:.5rem" onclick="showAddUserFromMenu()">+ Add person</button>
+    <button class="btn btn-danger w100" onclick="logoutFromMenu()">Sign out</button>
+  </div>
+</div>
 
 <!-- EDIT ITEM MODAL -->
 <div class="modal-overlay hidden" id="editModal" onclick="closeEditModal(event)">
@@ -791,6 +804,48 @@ function login(uid, silent) {
   av.textContent = u.name[0]; av.style.background = u.bg; av.style.color = u.color;
   document.getElementById('dashGreeting').innerHTML = `Hey, <span>${u.name}</span> 👋`;
   navTo('dash');
+}
+function showUserMenu() {
+  const list = document.getElementById('userMenuList');
+  list.innerHTML = '';
+  ST.users.forEach(u => {
+    const isActive = ST.currentUser && ST.currentUser.id === u.id;
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;gap:.75rem;padding:.6rem .75rem;border-radius:8px;cursor:pointer;background:' + (isActive ? 'var(--accentdim)' : 'var(--s2)') + ';border:1px solid ' + (isActive ? 'var(--accentborder)' : 'var(--border)');
+    row.onclick = () => switchUser(u.id);
+    const av = document.createElement('div');
+    av.style.cssText = 'width:32px;height:32px;border-radius:50%;background:' + u.bg + ';color:' + u.color + ';display:flex;align-items:center;justify-content:center;font-family:Syne,sans-serif;font-weight:700';
+    av.textContent = u.name[0];
+    const info = document.createElement('div');
+    info.style.flex = '1';
+    const nm = document.createElement('div');
+    nm.style.cssText = 'font-weight:600;font-size:.875rem';
+    nm.textContent = u.name;
+    const ct = document.createElement('div');
+    ct.style.cssText = 'font-size:.72rem;color:var(--text3)';
+    ct.textContent = ST.items.filter(i=>i.loggedBy===u.id).length + ' items';
+    info.appendChild(nm); info.appendChild(ct);
+    row.appendChild(av); row.appendChild(info);
+    if(isActive) { const badge = document.createElement('span'); badge.style.cssText='color:var(--accent);font-size:.75rem'; badge.textContent='Active'; row.appendChild(badge); }
+    list.appendChild(row);
+  });
+  document.getElementById('userMenuModal').classList.remove('hidden');
+}
+function closeUserMenu(e) {
+  if(!e || e.target === document.getElementById('userMenuModal'))
+    document.getElementById('userMenuModal').classList.add('hidden');
+}
+function switchUser(uid) {
+  document.getElementById('userMenuModal').classList.add('hidden');
+  login(uid);
+}
+function showAddUserFromMenu() {
+  document.getElementById('userMenuModal').classList.add('hidden');
+  showAddUser();
+}
+function logoutFromMenu() {
+  document.getElementById('userMenuModal').classList.add('hidden');
+  logout();
 }
 function logout() {
   ST.currentUser = null;
@@ -1101,7 +1156,7 @@ async function startAnalysis() {
       type:'image',
       source:{type:'base64', media_type:'image/jpeg', data:b64}
     }));
-    const resp = await fetch('/.netlify/functions/analyze',{
+    const resp = await fetch('/api/analyze',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
