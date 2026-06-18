@@ -21,12 +21,34 @@
 ---
 
 ### "Do you own a home / real estate? Are you selling property?"
-> "I'm not here to do an asset review — I'm here to make a fair lump-sum offer. Whatever I pay comes
-> from savings and family. Can we focus on the settlement number?"
+They already liened the house, and you need a release for a sale/refi — so acknowledge that much,
+but **don't volunteer the closing date or how much you'll net.**
+> "There's a possible sale or refinance — which is exactly why I want your lien **released**. But
+> after the mortgage and my homestead exemption there's little equity behind it, so let's settle on a
+> realistic release number rather than a financial interview."
 
-If pushed: *"I'd rather not get into an itemized financial interview today."* Then go quiet.
-**Never state something false.** Declining to answer is allowed; lying is not — and on a real estate
-question, a flat redirect is both safer and truthful.
+**Never state anything false.** You're not hiding the lien (it's public record); you're just not
+handing them your timing or proceeds.
+
+---
+
+### "We have a judgment lien on your house — why would we discount?"
+This is the heart of it. Answer calmly with homestead + bankruptcy:
+> "Because the lien isn't worth its face value to you. The house is jointly owned, these are only my
+> debts, and after the mortgage and my **$182,625 Ohio homestead exemption** there's little or no
+> equity you could actually reach on a sale. And in a Chapter 7, a judgment lien like this can be
+> **stripped** where it impairs my homestead exemption. A discounted payoff to release the lien now
+> is genuinely more than you'd net otherwise."
+
+*Why it matters:* a recorded lien gives them some leverage (you need it released to close), but the
+homestead exemption + § 522(f) lien-stripping caps what it's really worth. That's your counter.
+
+---
+
+### "How and when do we get paid?"
+> "Through the closing — the payoff comes out of the transaction, and in exchange you deliver a
+> recordable release of the lien and a satisfaction. I can't pay before then, and I can't pay without
+> a signed agreement, but the release is what lets the deal fund."
 
 ---
 
@@ -102,7 +124,8 @@ Fair to ask them to confirm reporting in writing:
 ---
 
 ## Your one-sentence anchors (memorize these)
-- "That's the most I can put together — it's largely borrowed."
-- "I'd rather settle voluntarily than have everyone end up with nothing in bankruptcy."
+- "After the mortgage and my homestead exemption, your lien reaches little or nothing on a sale."
+- "A judgment lien like this can be stripped in Chapter 7 — a discounted release now beats that."
+- "I want your lien **released** for a realistic number so I can clear title."
 - "I can't send any money until I have a signed agreement."
-- "Let's focus on the settlement number." *(for any asset/income question)*
+- "I'd rather not get into a financial interview or a hard date." *(deflect timing/proceeds)*

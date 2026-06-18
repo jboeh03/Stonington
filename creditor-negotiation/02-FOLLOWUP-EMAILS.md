@@ -26,12 +26,13 @@ Reusable reference block (paste into any email as needed):
 > discussed regarding the two American Express judgments your firm handles against me — Hamilton
 > County Common Pleas **Case Nos. CJ25-022895 and CJ25-025962**:
 >
-> - I will pay a **lump sum of $[AGREED AMOUNT]** by cashier's check.
-> - This payment **fully and finally satisfies both** judgments.
-> - Your firm will **file a Satisfaction of Judgment** on **both** cases within **30 days** of the
->   payment clearing.
-> - Your firm will **not file or record a certificate of judgment** on either case, and will
->   release/cancel any lien if one exists.
+> - I will pay a **lump sum of $[AGREED AMOUNT]** by cashier's check, paid **at/through closing on or
+>   before [DEADLINE]**, in **full and final satisfaction of both** judgments.
+> - Upon payment, your firm will provide a **recordable Release/Cancellation of the Certificate of
+>   Judgment** for **each** case and **file a Satisfaction of Judgment** on both within **30 days**,
+>   sufficient to clear title.
+> - **Standstill:** until the deadline, your firm will take **no execution, foreclosure, garnishment,
+>   or other collection action** on either case.
 > - There will be **no further collection** on these accounts, and they will be reported to the
 >   credit bureaus as **settled/satisfied with a $0 balance**.
 >
@@ -53,17 +54,15 @@ Reusable reference block (paste into any email as needed):
 > Following our call, please prepare a written settlement agreement for the two American Express
 > judgments (**CJ25-022895 and CJ25-025962**) that includes the following terms:
 >
-> 1. Settlement amount: **$[AGREED AMOUNT]**, paid by cashier's check, in **full satisfaction** of
->    both judgments.
-> 2. Within **30 days** of payment clearing, your firm files a **Satisfaction of Judgment** in both
->    cases with the Hamilton County Clerk of Courts.
-> 3. Your firm will **not file or record a certificate of judgment** on either case and will
->    **release or cancel any existing lien**.
-> 4. **No further collection activity** of any kind on these accounts.
-> 5. Both accounts reported to the credit bureaus as **settled/satisfied, $0 balance**.
-> 6. `[If paying over time:]` While I make the agreed payments, your firm will take **no execution,
->    garnishment, or certificate-of-judgment action** (a standstill); the satisfaction is filed once
->    the final payment clears.
+> 1. Settlement amount: **$[AGREED AMOUNT]**, paid by cashier's check at/through closing **on or
+>    before [DEADLINE]**, in **full satisfaction** of both judgments.
+> 2. Upon payment, your firm provides a **recordable Release/Cancellation of the Certificate of
+>    Judgment** for each case **and** files a **Satisfaction of Judgment** in both cases with the
+>    Hamilton County Clerk of Courts within **30 days** — sufficient to clear title.
+> 3. **No further collection activity** of any kind on these accounts.
+> 4. Both accounts reported to the credit bureaus as **settled/satisfied, $0 balance**.
+> 5. **Standstill:** through the payment deadline, your firm takes **no execution, foreclosure,
+>    garnishment, or other collection action** on either case.
 >
 > Once I receive the signed agreement I will send payment promptly. Please confirm the email address
 > and timeline.
@@ -102,9 +101,10 @@ Reusable reference block (paste into any email as needed):
 >
 > Per that agreement, please:
 > 1. Apply this as **payment in full** of both judgments;
-> 2. **File a Satisfaction of Judgment** in both cases within **30 days**; and
-> 3. Send me a **paid-in-full / zero-balance letter** and a copy of each **file-stamped Satisfaction
->    of Judgment** once filed.
+> 2. Provide a **recordable Release/Cancellation of the Certificate of Judgment** for each case and
+>    **file a Satisfaction of Judgment** in both cases within **30 days**; and
+> 3. Send me a **paid-in-full / zero-balance letter** and copies of each **file-stamped release and
+>    Satisfaction of Judgment** once filed.
 >
 > Please confirm receipt. Thank you,
 > Jeffrey Boeh
@@ -121,8 +121,8 @@ Reusable reference block (paste into any email as needed):
 >
 > My settlement payment of **$[AGREED AMOUNT]** cleared on `[DATE]`. Please send me:
 >
-> 1. A copy of each **file-stamped Satisfaction of Judgment** filed in Case Nos. CJ25-022895 and
->    CJ25-025962; and
+> 1. A copy of each **file-stamped Release/Cancellation of the Certificate of Judgment and
+>    Satisfaction of Judgment** filed in Case Nos. CJ25-022895 and CJ25-025962; and
 > 2. A **letter confirming a $0 balance** and that both accounts will be reported to the credit
 >    bureaus as settled/satisfied.
 >
