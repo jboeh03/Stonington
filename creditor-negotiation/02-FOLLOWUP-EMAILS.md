@@ -3,6 +3,12 @@
 > Replace every `[bracket]`. Keep your tone businesslike and short. **Never send payment until you
 > have their signed agreement.** Send from an email address you'll keep, and save everything.
 
+**Send to — Javitch Block LLC** (the firm on these judgments):
+- Cincinnati office: 700 Walnut St., Suite 302, Cincinnati, OH 45202 • (800) 837-0109
+- Cleveland HQ: 1100 Superior Ave., 19th Fl., Cleveland, OH 44114 • cle@jbllc.com • fax 216.623.0190
+- *(Confirm the exact rep/email and the correct payment address on your call before sending money;
+  mail payments with tracking.)*
+
 Reusable reference block (paste into any email as needed):
 
 > **Re: American Express judgments — Hamilton County C.P. Case Nos. CJ25-022895 and CJ25-025962

@@ -3,8 +3,10 @@
 > Speak slowly and calmly. You are not in trouble; **you're the one offering them money.** Pauses
 > are good — after you state a number, **stop talking** and let them respond.
 >
-> Fill in: `[FIRM]`, `[REP NAME]`, case numbers are **CJ25-022895** and **CJ25-025962**.
-> Have a pen ready to log the rep's name, time, and what's agreed.
+> Firm: **Javitch Block LLC** — Cincinnati office **(800) 837-0109** (your cases are in Hamilton
+> County). Ask for the **post-judgment / settlement department**. Case numbers: **CJ25-022895** and
+> **CJ25-025962**. Fill in `[REP NAME]` once you have it. Have a pen ready to log the rep's name,
+> time, and what's agreed.
 
 ---
 

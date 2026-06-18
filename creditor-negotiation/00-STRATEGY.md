@@ -12,14 +12,20 @@
 
 | Item | Account A | Account B |
 |---|---|---|
-| Law firm name | `[FIRM NAME]` | (same firm) |
-| Firm phone / email | `[PHONE]` / `[EMAIL]` | (same) |
+| Law firm | **Javitch Block LLC** | (same firm) |
+| Cincinnati office | **700 Walnut St., Suite 302, Cincinnati, OH 45202** • **(800) 837-0109** | (same) |
+| Cleveland HQ / main | **1100 Superior Ave., 19th Fl., Cleveland, OH 44114** • **(800) 837-4601** • cle@jbllc.com | (same) |
 | Case number | **CJ25-022895** | **CJ25-025962** |
 | Judgment amount | **$22,681.67** | **$23,310.89** |
 | AmEx acct (last 4) | `[____]` | `[____]` |
 | Liable party | Jeffrey only | Jeffrey only |
 
 **Combined judgment total ≈ $45,992.56.**
+
+> Call the **Cincinnati office (800) 837-0109** first (your cases are in Hamilton County). Ask for
+> the **post-judgment / settlement department** and have both case numbers ready. Javitch Block is a
+> high-volume collection firm — the rep will likely have settlement authority on the spot, but **get
+> any deal in writing before you pay** (Iron Rules below).
 
 ---
 
