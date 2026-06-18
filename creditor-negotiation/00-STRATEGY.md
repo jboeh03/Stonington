@@ -36,9 +36,14 @@
 >   now a **discounted lien-release/payoff**, not "settle before they file."
 > - **Your homestead exemption is now the main lever.** A lien does not override Ohio's **$182,625
 >   homestead exemption** (R.C. 2329.66); these are Jeffrey's debts only, so a lien reaches only his
->   ~half-interest. Unless the house is worth more than **~$677k**, his reachable equity is **fully
->   exempt** — so on a sale these creditors likely net **little or nothing**. That's your argument
->   for a cheap release.
+>   ~half-interest. **At an est. $530–550k value:** equity after the $311,756 mortgage ≈ **$218–238k**
+>   (less ~$30–40k selling costs); Jeffrey's half ≈ **$109–119k** — **entirely under his $182,625
+>   exemption**, so on a sale these creditors net **≈ $0**. (Wouldn't flip until the house was worth
+>   ~$677k+.) That's your argument for a cheap release.
+> - **Voluntary-sale caveat:** "they get $0" is true in a *forced sale / bankruptcy*. In a voluntary
+>   sale the title company still needs each lien **released** to clear title, and the creditor can
+>   refuse to sign unless paid *something* — so homestead drives the release price **way down, not
+>   necessarily to zero** (unless you strip the liens in Chapter 7 first).
 > - **Talk to a bankruptcy attorney BEFORE paying to release anything.** In Chapter 7 a judicial
 >   (judgment) lien that impairs your homestead exemption can be **avoided/stripped under
 >   11 U.S.C. § 522(f)** — potentially wiping these liens for the cost of a filing instead of a
